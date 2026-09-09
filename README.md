@@ -24,6 +24,7 @@ main.go
     ├── select_user.go
     ├── update_user.go
     ├── delete_user.go
+    ├── upload_file.go
     └── user_store.go
 ```
 
@@ -38,12 +39,22 @@ main.go
 | POST | `/users` | สร้าง user, `201` |
 | PUT | `/users/:id` | แก้ไข user, `200` หรือ `404` |
 | DELETE | `/users/:id` | ลบ user, `200` หรือ `404` |
+| POST | `/files` | รับ multipart file field `file`, `200` หรือ `400` |
 
 Body สำหรับ create/update:
 
 ```json
 {"name":"Carol","email":"carol@example.com"}
 ```
+
+อัปโหลดไฟล์ด้วย multipart field ชื่อ `file`:
+
+```bash
+curl -i -X POST http://127.0.0.1:3000/files \
+  -F 'file=@./example.txt'
+```
+
+API นี้คืนเฉพาะ `filename`, `size` และ `content_type` ยังไม่ได้บันทึกไฟล์ถาวร
 
 ## สิ่งที่ต้องติดตั้ง
 
@@ -98,6 +109,16 @@ sam local invoke LambdaFunction \
 }
 ```
 
+ทดสอบรับไฟล์ด้วย event multipart:
+
+```bash
+sam local invoke LambdaFunction \
+  --template-file .aws-sam/build/template.yaml \
+  --event events/upload.json
+```
+
+ผลลัพธ์ที่คาดหวัง: `filename=hello.txt`, `size=14`, `content_type=text/plain`
+
 ## ทดสอบผ่าน HTTP ด้วย SAM
 
 เปิด terminal แรก:
@@ -144,6 +165,7 @@ go vet ./...                          PASS
 sam validate --lint                   PASS
 sam build                             PASS
 sam local invoke                     PASS (200)
+sam local invoke upload event        PASS (200, hello.txt, 14 bytes)
 sam local start-api CRUD              PASS (200, 201, 200, 200, 200, 404)
 response_body object logging           PASS (`response_body.users` มี user list)
 ```

@@ -15,6 +15,7 @@ func NewRouter() *gin.Engine {
 	router.POST("/users", CreateUser)
 	router.PUT("/users/:id", UpdateUser)
 	router.DELETE("/users/:id", DeleteUser)
+	router.POST("/files", UploadFile)
 
 	return router
 }

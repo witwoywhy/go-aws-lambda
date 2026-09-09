@@ -1,7 +1,9 @@
 package handler
 
 import (
+	"bytes"
 	"encoding/json"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -52,6 +54,48 @@ func TestRouterCRUD(t *testing.T) {
 	response = call(t, router, http.MethodGet, "/users/"+created.ID, "")
 	if response.Code != 404 {
 		t.Fatalf("deleted user status = %d, want 404", response.Code)
+	}
+}
+
+func TestUploadFile(t *testing.T) {
+	router := NewRouter()
+
+	var body bytes.Buffer
+	writer := multipart.NewWriter(&body)
+	part, err := writer.CreateFormFile("file", "hello.txt")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := part.Write([]byte("hello")); err != nil {
+		t.Fatal(err)
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	request := httptest.NewRequest(http.MethodPost, "/files", &body)
+	request.Header.Set("Content-Type", writer.FormDataContentType())
+	recorder := httptest.NewRecorder()
+	router.ServeHTTP(recorder, request)
+
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("upload status = %d, want 200", recorder.Code)
+	}
+	var result struct {
+		Filename    string `json:"filename"`
+		Size        int64  `json:"size"`
+		ContentType string `json:"content_type"`
+	}
+	if err := json.Unmarshal(recorder.Body.Bytes(), &result); err != nil {
+		t.Fatal(err)
+	}
+	if result.Filename != "hello.txt" || result.Size != 5 || result.ContentType != "application/octet-stream" {
+		t.Fatalf("upload response = %#v", result)
+	}
+
+	response := call(t, router, http.MethodPost, "/files", "")
+	if response.Code != http.StatusBadRequest {
+		t.Fatalf("missing file status = %d, want 400", response.Code)
 	}
 }
 

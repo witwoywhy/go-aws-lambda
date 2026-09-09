@@ -1,0 +1,9 @@
+{
+  "httpMethod": "POST",
+  "path": "/files",
+  "headers": {
+    "Content-Type": "multipart/form-data; boundary=----CodexBoundary"
+  },
+  "body": "LS0tLS0tQ29kZXhCb3VuZGFyeQ0KQ29udGVudC1EaXNwb3NpdGlvbjogZm9ybS1kYXRhOyBuYW1lPSJmaWxlIjsgZmlsZW5hbWU9ImhlbGxvLnR4dCINCkNvbnRlbnQtVHlwZTogdGV4dC9wbGFpbg0KDQpoZWxsbyBmcm9tIFNBTQ0KLS0tLS0tQ29kZXhCb3VuZGFyeS0tDQo=",
+  "isBase64Encoded": true
+}
